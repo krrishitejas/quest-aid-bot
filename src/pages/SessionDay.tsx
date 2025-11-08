@@ -3,44 +3,13 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SessionQuiz } from "@/components/SessionQuiz";
+import { YouTubeVideoCard } from "@/components/YouTubeVideoCard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, ArrowLeft, Youtube, ExternalLink } from "lucide-react";
+import { CheckCircle, ArrowLeft, BookOpen } from "lucide-react";
 import { toast } from "sonner";
-
-// Mock YouTube videos for each day
-const mockYouTubeVideos = [
-  {
-    title: "Introduction to the Topic - Complete Guide",
-    channel: "Education Pro",
-    duration: "15:30",
-    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    views: "1.2M"
-  },
-  {
-    title: "Advanced Concepts Explained",
-    channel: "Learn Fast",
-    duration: "22:45",
-    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    views: "856K"
-  },
-  {
-    title: "Practice Problems and Solutions",
-    channel: "Math Master",
-    duration: "18:20",
-    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    views: "643K"
-  },
-  {
-    title: "Quick Revision - Key Points",
-    channel: "Quick Study",
-    duration: "10:15",
-    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    views: "2.1M"
-  }
-];
 
 export default function SessionDay() {
   const [searchParams] = useSearchParams();
@@ -55,15 +24,15 @@ export default function SessionDay() {
   const topic = searchParams.get('topic') || '';
   const date = searchParams.get('date') || '';
 
-  const dayTopics = [
-    "Introduction & Basics",
-    "Core Concepts",
-    "Advanced Topics",
-    "Practice Problems",
-    "Review & Revision",
-    "Mock Test",
-    "Final Review"
-  ];
+  // Load the study plan and get the daily content
+  const studyPlans = JSON.parse(localStorage.getItem('studyPlans') || '[]');
+  const currentPlan = studyPlans.find((p: any) => p.id === planId);
+  const dayIndex = parseInt(dayNumber) - 1;
+  const dayContent = currentPlan?.dailySchedule?.[dayIndex] || {
+    topics: [topic],
+    summary: "Study the fundamentals and practice problems to master today's topics.",
+    videos: []
+  };
 
   const handleVideosComplete = () => {
     setVideosWatched(true);
@@ -138,11 +107,11 @@ export default function SessionDay() {
                 Day {dayNumber}
               </Badge>
               <h1 className="text-4xl font-bold">
-                {dayTopics[parseInt(dayNumber) - 1] || `Day ${dayNumber}`}
+                {dayContent.topics.join(' • ')}
               </h1>
             </div>
             <p className="text-muted-foreground text-lg mb-4">
-              {subject} - {topic}
+              {subject}
             </p>
             <div className="flex items-center gap-4">
               {videosWatched && (
@@ -170,39 +139,37 @@ export default function SessionDay() {
             <TabsContent value="videos">
               <Card className="p-6 mb-6">
                 <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                  <Youtube className="w-6 h-6 text-destructive" />
-                  Recommended Study Videos
+                  <BookOpen className="w-6 h-6 text-primary" />
+                  Today's Focus
                 </h2>
+                <p className="text-muted-foreground leading-relaxed">
+                  {dayContent.summary}
+                </p>
+              </Card>
+
+              <Card className="p-6 mb-6">
+                <h2 className="text-2xl font-bold mb-4">Study Videos</h2>
                 <p className="text-muted-foreground mb-6">
-                  Watch these curated videos to learn about today's topic. Click any video to open it on YouTube.
+                  Watch these videos to understand today's topics thoroughly. Click any video to open it on YouTube.
                 </p>
 
-                <div className="space-y-4">
-                  {mockYouTubeVideos.map((video, index) => (
-                    <a
-                      key={index}
-                      href={video.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block p-4 bg-accent/5 rounded-xl border border-border hover:border-primary/50 transition-smooth group"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 bg-destructive/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-destructive/20 transition-smooth">
-                          <Youtube className="w-6 h-6 text-destructive" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold mb-1 group-hover:text-primary transition-smooth">
-                            {video.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {video.channel} • {video.views} views • {video.duration}
-                          </p>
-                        </div>
-                        <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-smooth flex-shrink-0" />
-                      </div>
-                    </a>
-                  ))}
-                </div>
+                {dayContent.videos.length > 0 ? (
+                  <div className="space-y-4">
+                    {dayContent.videos.map((video: any, index: number) => (
+                      <YouTubeVideoCard key={index} video={video} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-accent/5 rounded-xl border border-dashed border-border">
+                    <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">
+                      Video recommendations will be generated based on your uploaded study materials.
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      This feature will be powered by AI analysis of your notes and previous year papers.
+                    </p>
+                  </div>
+                )}
               </Card>
               
               {!videosWatched && (

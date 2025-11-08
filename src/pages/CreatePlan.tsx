@@ -56,7 +56,45 @@ export default function CreatePlan() {
     // Calculate days until exam
     const today = new Date();
     const examDate = new Date(formData.examDate);
-    const daysUntilExam = Math.ceil((examDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const daysUntilExam = Math.max(7, Math.ceil((examDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+    
+    // Create daily breakdown based on topics
+    // In the future, this will be powered by AI analysis of uploaded files
+    const topicsPerDay = Math.ceil(formData.topics.length / Math.min(daysUntilExam, 7));
+    const dailySchedule = [];
+    
+    for (let day = 0; day < Math.min(daysUntilExam, 7); day++) {
+      const startIdx = day * topicsPerDay;
+      const dayTopics = formData.topics.slice(startIdx, startIdx + topicsPerDay);
+      
+      if (dayTopics.length > 0) {
+        dailySchedule.push({
+          day: day + 1,
+          topics: dayTopics,
+          summary: `Study ${dayTopics.join(', ')}. Focus on understanding core concepts and practicing problems.`,
+          videos: [
+            {
+              title: `${dayTopics[0]} - Complete Tutorial`,
+              channel: "Educational Channel",
+              duration: "15:30",
+              views: "1.2M",
+              url: `https://youtube.com/results?search_query=${encodeURIComponent(dayTopics[0] + ' ' + formData.subject)}`,
+              thumbnail: "",
+              relevance: 0.95
+            },
+            {
+              title: `${dayTopics[0]} - Practice Problems`,
+              channel: "Study Helper",
+              duration: "12:45",
+              views: "850K",
+              url: `https://youtube.com/results?search_query=${encodeURIComponent(dayTopics[0] + ' practice ' + formData.subject)}`,
+              thumbnail: "",
+              relevance: 0.88
+            }
+          ]
+        });
+      }
+    }
     
     // Create the study plan
     const newPlan = {
@@ -64,6 +102,7 @@ export default function CreatePlan() {
       subject: formData.subject,
       examDate: formData.examDate,
       topics: formData.topics,
+      dailySchedule,
       resources: formData.files.map(file => ({
         filename: file.name,
         size: file.size,
@@ -74,15 +113,10 @@ export default function CreatePlan() {
       createdAt: new Date().toISOString(),
       progress: 0,
       sessionsCompleted: 0,
-      totalSessions: Math.floor(daysUntilExam * (formData.dailyMinutes / formData.sessionLength)),
-      nextSession: {
-        date: new Date(today.getTime() + 24 * 60 * 60 * 1000).toLocaleDateString(),
-        topic: formData.topics[0] || "Introduction",
-        time: "9:00 AM"
-      }
+      totalSessions: dailySchedule.length,
     };
     
-    // Simulate processing
+    // Simulate AI processing
     setTimeout(() => {
       // Save to localStorage
       const existingPlans = JSON.parse(localStorage.getItem('studyPlans') || '[]');
@@ -101,7 +135,8 @@ export default function CreatePlan() {
       
       setIsProcessing(false);
       toast.success("Study plan created successfully!");
-      navigate("/");
+      // Navigate directly to the study schedule
+      navigate(`/session?planId=${newPlan.id}&subject=${encodeURIComponent(formData.subject)}&topic=${encodeURIComponent(formData.topics[0] || 'General')}`);
     }, 3000);
   };
 
@@ -262,7 +297,7 @@ export default function CreatePlan() {
       {isProcessing && (
         <ProcessingModal
           progress={65}
-          currentStep="Generating questions"
+          currentStep="Analyzing content and generating daily summaries"
           onCancel={() => setIsProcessing(false)}
         />
       )}
