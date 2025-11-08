@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import CreatePlan from "./pages/CreatePlan";
 import Quiz from "./pages/Quiz";
 import Session from "./pages/Session";
+import SessionDay from "./pages/SessionDay";
 import Review from "./pages/Review";
 import Auth from "./pages/Auth";
 import Analytics from "./pages/Analytics";
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/create-plan" element={<CreatePlan />} />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/session" element={<Session />} />
+          <Route path="/session/day" element={<SessionDay />} />
           <Route path="/review" element={<Review />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/analytics" element={<Analytics />} />

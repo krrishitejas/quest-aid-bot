@@ -3,8 +3,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, CheckCircle, Lock, Clock } from "lucide-react";
+import { Calendar, CheckCircle, Lock, Clock, Bell } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface DayScheduleProps {
   planId: string;
@@ -22,8 +23,10 @@ interface DayTask {
 }
 
 export const DaySchedule = ({ planId, subject, topic }: DayScheduleProps) => {
+  const navigate = useNavigate();
   const [schedule, setSchedule] = useState<DayTask[]>([]);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  const [remindersEnabled, setRemindersEnabled] = useState(false);
 
   useEffect(() => {
     // Generate 7-day schedule starting from today
@@ -61,15 +64,55 @@ export const DaySchedule = ({ planId, subject, topic }: DayScheduleProps) => {
     }
 
     setSchedule(tasks);
+
+    // Check if reminders are enabled
+    const remindersPref = localStorage.getItem(`reminders_${planId}`);
+    setRemindersEnabled(remindersPref === 'true');
   }, [planId]);
 
-  const handleCompleteDay = (dayIndex: number) => {
+  const enableReminders = async () => {
+    if ('Notification' in window) {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        localStorage.setItem(`reminders_${planId}`, 'true');
+        setRemindersEnabled(true);
+        
+        // Schedule reminders for upcoming days
+        schedule.forEach((task) => {
+          if (!task.completed && !task.locked) {
+            const taskTime = new Date(task.date);
+            taskTime.setHours(9, 0, 0, 0); // Set reminder for 9 AM
+            
+            const now = new Date();
+            const timeUntilReminder = taskTime.getTime() - now.getTime();
+            
+            if (timeUntilReminder > 0) {
+              setTimeout(() => {
+                new Notification('Study Reminder', {
+                  body: `Time to study: ${task.title}`,
+                  icon: '/favicon.ico'
+                });
+              }, timeUntilReminder);
+            }
+          }
+        });
+        
+        toast.success("Study reminders enabled! You'll be notified at 9 AM each day.");
+      } else {
+        toast.error("Please enable notifications in your browser settings.");
+      }
+    } else {
+      toast.error("Notifications not supported in this browser.");
+    }
+  };
+
+  const handleStartDay = (dayIndex: number) => {
     const task = schedule[dayIndex];
     const today = new Date().toISOString().split('T')[0];
     
-    // Check if trying to complete future task
+    // Check if trying to start future task
     if (task.date > today) {
-      toast.error("You can only complete today's tasks. Come back on " + new Date(task.date).toLocaleDateString());
+      toast.error("You can only start today's task. Come back on " + new Date(task.date).toLocaleDateString());
       return;
     }
 
@@ -79,45 +122,19 @@ export const DaySchedule = ({ planId, subject, topic }: DayScheduleProps) => {
       return;
     }
 
-    // Check if trying to complete past task
+    // Check if trying to start past task
     if (task.date < today && !task.completed) {
       toast.error("This day has passed. Focus on today's task!");
       return;
     }
 
-    // Mark as complete
-    const updatedSchedule = [...schedule];
-    updatedSchedule[dayIndex].completed = true;
-    
-    // Unlock next day
-    if (dayIndex + 1 < updatedSchedule.length) {
-      updatedSchedule[dayIndex + 1].locked = false;
+    if (task.completed) {
+      toast.info("You've already completed this day!");
+      return;
     }
-    
-    setSchedule(updatedSchedule);
 
-    // Save progress
-    const progress: Record<string, any> = {};
-    updatedSchedule.forEach(task => {
-      progress[task.date] = {
-        completed: task.completed,
-        locked: task.locked
-      };
-    });
-    localStorage.setItem(`schedule_${planId}`, JSON.stringify(progress));
-
-    // Update study hours
-    const stats = JSON.parse(localStorage.getItem('userStats') || JSON.stringify({
-      totalStudyHours: 0,
-      questionsAnswered: 0,
-      averageScore: 0,
-      activePlans: 0
-    }));
-    stats.totalStudyHours += task.duration / 60;
-    localStorage.setItem('userStats', JSON.stringify(stats));
-
-    toast.success(`Day ${task.day} completed! +${task.duration} minutes of study time`);
-    setCurrentDayIndex(Math.min(dayIndex + 1, schedule.length - 1));
+    // Navigate to day-specific study page
+    navigate(`/session/day?dayNumber=${task.day}&plan=${planId}&subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}&date=${task.date}`);
   };
 
   const completedDays = schedule.filter(t => t.completed).length;
@@ -129,10 +146,23 @@ export const DaySchedule = ({ planId, subject, topic }: DayScheduleProps) => {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xl font-bold">7-Day Study Schedule</h3>
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Calendar className="w-3 h-3" />
-            {completedDays}/{schedule.length} Days
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
+              {completedDays}/{schedule.length} Days
+            </Badge>
+            {!remindersEnabled && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={enableReminders}
+                className="flex items-center gap-1"
+              >
+                <Bell className="w-3 h-3" />
+                Enable Reminders
+              </Button>
+            )}
+          </div>
         </div>
         <Progress value={progressPercentage} className="mb-2" />
         <p className="text-sm text-muted-foreground">
@@ -183,11 +213,11 @@ export const DaySchedule = ({ planId, subject, topic }: DayScheduleProps) => {
                 <Button
                   variant={isToday ? "default" : "outline"}
                   size="sm"
-                  onClick={() => handleCompleteDay(index)}
+                  onClick={() => handleStartDay(index)}
                   disabled={task.completed || task.locked || isFuture || isPast}
                   className={isToday ? "gradient-primary" : ""}
                 >
-                  {task.completed ? "Completed" : task.locked ? "Locked" : isFuture ? "Not Yet" : isPast ? "Missed" : "Complete"}
+                  {task.completed ? "Completed" : task.locked ? "Locked" : isFuture ? "Not Yet" : isPast ? "Missed" : "Start"}
                 </Button>
               </div>
             </Card>

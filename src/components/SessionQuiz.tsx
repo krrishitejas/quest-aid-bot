@@ -20,6 +20,11 @@ interface QuizQuestion {
   explanation: string;
 }
 
+interface SessionQuizProps {
+  onQuizComplete?: (score: number, totalMarks: number) => void;
+  minimumScore?: number;
+}
+
 const mockQuestions: QuizQuestion[] = [
   {
     id: "q1",
@@ -51,7 +56,7 @@ const mockQuestions: QuizQuestion[] = [
   }
 ];
 
-export const SessionQuiz = () => {
+export const SessionQuiz = ({ onQuizComplete, minimumScore = 0 }: SessionQuizProps) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -109,7 +114,11 @@ export const SessionQuiz = () => {
     stats.averageScore = stats.averageScore === 0 ? percentage : (stats.averageScore + percentage) / 2;
     localStorage.setItem('userStats', JSON.stringify(stats));
 
-    toast.success(`Quiz completed! You scored ${totalScore}/${totalMarks}`);
+    if (onQuizComplete) {
+      onQuizComplete(totalScore, totalMarks);
+    } else {
+      toast.success(`Quiz completed! You scored ${totalScore}/${totalMarks}`);
+    }
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -218,13 +227,28 @@ export const SessionQuiz = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="text-center p-8 bg-accent/5 rounded-xl">
+            <div className={`text-center p-8 rounded-xl ${
+              ((score / totalMarks) * 100) >= minimumScore 
+                ? 'bg-success/10 border-2 border-success' 
+                : 'bg-destructive/10 border-2 border-destructive'
+            }`}>
               <div className="text-6xl font-bold text-primary mb-2">
                 {score}/{totalMarks}
               </div>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-lg text-muted-foreground mb-2">
                 {((score / totalMarks) * 100).toFixed(1)}% Score
               </p>
+              {minimumScore > 0 && (
+                <p className={`text-sm font-semibold ${
+                  ((score / totalMarks) * 100) >= minimumScore 
+                    ? 'text-success' 
+                    : 'text-destructive'
+                }`}>
+                  {((score / totalMarks) * 100) >= minimumScore 
+                    ? `✓ Passed! (Required: ${minimumScore}%)` 
+                    : `✗ Failed (Required: ${minimumScore}%)`}
+                </p>
+              )}
             </div>
 
             <div className="space-y-4">
