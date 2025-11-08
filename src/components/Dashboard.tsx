@@ -1,54 +1,57 @@
+import { useState, useEffect } from "react";
 import { StatCard } from "./StatCard";
 import { PlanCard } from "./PlanCard";
 import { Button } from "@/components/ui/button";
-import { Clock, BookOpen, CheckCircle, Plus, TrendingUp } from "lucide-react";
+import { Clock, BookOpen, CheckCircle, Plus, TrendingUp, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export const Dashboard = () => {
   const navigate = useNavigate();
-  // Mock data
-  const stats = [
-    { icon: Clock, label: "Study Hours", value: "24.5", trend: { value: "12%", positive: true } },
-    { icon: CheckCircle, label: "Questions Answered", value: "342", trend: { value: "8%", positive: true } },
-    { icon: TrendingUp, label: "Average Score", value: "87%", trend: { value: "5%", positive: true } },
-    { icon: BookOpen, label: "Active Plans", value: "3" },
-  ];
+  const [plans, setPlans] = useState<any[]>([]);
+  const [stats, setStats] = useState([
+    { icon: Clock, label: "Study Hours", value: "0h", trend: { value: "0%", positive: true } },
+    { icon: CheckCircle, label: "Questions Answered", value: "0", trend: { value: "0%", positive: true } },
+    { icon: TrendingUp, label: "Average Score", value: "0%", trend: { value: "0%", positive: true } },
+    { icon: BookOpen, label: "Active Plans", value: "0" },
+  ]);
 
-  const plans = [
-    {
-      subject: "Physics",
-      examDate: "2025-12-15",
-      progress: 45,
-      nextSession: {
-        topic: "Newton's Laws of Motion",
-        date: "Tomorrow, 2:00 PM",
-      },
-      totalSessions: 30,
-      completedSessions: 13,
-    },
-    {
-      subject: "Mathematics",
-      examDate: "2025-12-20",
-      progress: 62,
-      nextSession: {
-        topic: "Calculus - Derivatives",
-        date: "Today, 6:00 PM",
-      },
-      totalSessions: 25,
-      completedSessions: 15,
-    },
-    {
-      subject: "Chemistry",
-      examDate: "2025-12-10",
-      progress: 78,
-      nextSession: {
-        topic: "Organic Chemistry Reactions",
-        date: "Today, 4:00 PM",
-      },
-      totalSessions: 20,
-      completedSessions: 16,
-    },
-  ];
+  useEffect(() => {
+    // Load plans from localStorage
+    const savedPlans = JSON.parse(localStorage.getItem('studyPlans') || '[]');
+    setPlans(savedPlans);
+
+    // Load stats from localStorage
+    const userStats = JSON.parse(localStorage.getItem('userStats') || JSON.stringify({
+      totalStudyHours: 0,
+      questionsAnswered: 0,
+      averageScore: 0,
+      activePlans: savedPlans.length
+    }));
+
+    setStats([
+      { icon: Clock, label: "Study Hours", value: `${userStats.totalStudyHours}h`, trend: { value: "12%", positive: true } },
+      { icon: CheckCircle, label: "Questions Answered", value: userStats.questionsAnswered.toString(), trend: { value: "8%", positive: true } },
+      { icon: TrendingUp, label: "Average Score", value: `${userStats.averageScore}%`, trend: { value: "5%", positive: true } },
+      { icon: BookOpen, label: "Active Plans", value: savedPlans.length.toString() },
+    ]);
+  }, []);
+
+  const handleStatClick = (label: string) => {
+    switch(label) {
+      case "Study Hours":
+        navigate("/study-hours");
+        break;
+      case "Questions Answered":
+        navigate("/questions-answered");
+        break;
+      case "Average Score":
+        navigate("/average-score");
+        break;
+      case "Active Plans":
+        navigate("/active-plans");
+        break;
+    }
+  };
 
   return (
     <section className="py-12">
@@ -70,7 +73,12 @@ export const Dashboard = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {stats.map((stat, index) => (
-            <div key={index} className="animate-scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
+            <div 
+              key={index} 
+              className="animate-scale-in cursor-pointer" 
+              style={{ animationDelay: `${index * 0.1}s` }}
+              onClick={() => handleStatClick(stat.label)}
+            >
               <StatCard {...stat} />
             </div>
           ))}
@@ -78,13 +86,25 @@ export const Dashboard = () => {
 
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-6">Your Study Plans</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {plans.map((plan, index) => (
-              <div key={index} className="animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
-                <PlanCard {...plan} />
-              </div>
-            ))}
-          </div>
+          {plans.length === 0 ? (
+            <div className="text-center py-12 bg-card rounded-2xl border-2 border-dashed border-border">
+              <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Study Plans Yet</h3>
+              <p className="text-muted-foreground mb-6">Create your first study plan to get started</p>
+              <Button onClick={() => navigate("/create-plan")} className="gradient-primary text-white">
+                <Plus className="w-5 h-5 mr-2" />
+                Create Your First Plan
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {plans.map((plan, index) => (
+                <div key={plan.id} className="animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+                  <PlanCard {...plan} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>

@@ -52,8 +52,53 @@ export default function CreatePlan() {
 
   const handleSubmit = () => {
     setIsProcessing(true);
+    
+    // Calculate days until exam
+    const today = new Date();
+    const examDate = new Date(formData.examDate);
+    const daysUntilExam = Math.ceil((examDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Create the study plan
+    const newPlan = {
+      id: `plan-${Date.now()}`,
+      subject: formData.subject,
+      examDate: formData.examDate,
+      topics: formData.topics,
+      resources: formData.files.map(file => ({
+        filename: file.name,
+        size: file.size,
+        type: file.type
+      })),
+      dailyMinutes: formData.dailyMinutes,
+      sessionLength: formData.sessionLength,
+      createdAt: new Date().toISOString(),
+      progress: 0,
+      sessionsCompleted: 0,
+      totalSessions: Math.floor(daysUntilExam * (formData.dailyMinutes / formData.sessionLength)),
+      nextSession: {
+        date: new Date(today.getTime() + 24 * 60 * 60 * 1000).toLocaleDateString(),
+        topic: formData.topics[0] || "Introduction",
+        time: "9:00 AM"
+      }
+    };
+    
     // Simulate processing
     setTimeout(() => {
+      // Save to localStorage
+      const existingPlans = JSON.parse(localStorage.getItem('studyPlans') || '[]');
+      existingPlans.push(newPlan);
+      localStorage.setItem('studyPlans', JSON.stringify(existingPlans));
+      
+      // Update stats
+      const stats = JSON.parse(localStorage.getItem('userStats') || JSON.stringify({
+        totalStudyHours: 0,
+        questionsAnswered: 0,
+        averageScore: 0,
+        activePlans: 0
+      }));
+      stats.activePlans = existingPlans.length;
+      localStorage.setItem('userStats', JSON.stringify(stats));
+      
       setIsProcessing(false);
       toast.success("Study plan created successfully!");
       navigate("/");

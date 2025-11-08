@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SessionContent } from "@/components/SessionContent";
@@ -7,7 +7,7 @@ import { ImportantQuestions } from "@/components/ImportantQuestions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle, Download, FileDown, Clock, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 
@@ -50,11 +50,39 @@ const mockSession = {
 
 export default function Session() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [sessionData, setSessionData] = useState({
+    subject: "Physics",
+    topic: "Newton's Laws of Motion"
+  });
+
+  useEffect(() => {
+    const subject = searchParams.get('subject');
+    const topic = searchParams.get('topic');
+    
+    if (subject && topic) {
+      setSessionData({
+        subject: decodeURIComponent(subject),
+        topic: decodeURIComponent(topic)
+      });
+    }
+  }, [searchParams]);
   const [activeTab, setActiveTab] = useState("content");
 
   const handleComplete = () => {
-    toast.success("Session completed! +25 XP earned");
-    setTimeout(() => navigate("/"), 1500);
+    // Update study hours
+    const stats = JSON.parse(localStorage.getItem('userStats') || JSON.stringify({
+      totalStudyHours: 0,
+      questionsAnswered: 0,
+      averageScore: 0,
+      activePlans: 0
+    }));
+    
+    stats.totalStudyHours += 0.75; // 45 minutes = 0.75 hours
+    localStorage.setItem('userStats', JSON.stringify(stats));
+    
+    toast.success("Session completed! +50 XP earned");
+    navigate("/");
   };
 
   const handleExport = (format: string) => {
@@ -69,7 +97,7 @@ export default function Session() {
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-4xl font-bold mb-2">{mockSession.topic}</h1>
+              <h1 className="text-4xl font-bold mb-2">{sessionData.subject} - {sessionData.topic}</h1>
               <p className="text-muted-foreground text-lg">{mockSession.objective}</p>
             </div>
             <div className="flex gap-2">
