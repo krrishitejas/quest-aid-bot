@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles, Trophy, Zap } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface HeaderProps {
   user?: {
@@ -14,14 +15,14 @@ export const Header = ({ user }: HeaderProps) => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             StudyBuddy
           </span>
-        </div>
+        </Link>
 
         {user ? (
           <div className="flex items-center gap-4">
@@ -45,12 +46,16 @@ export const Header = ({ user }: HeaderProps) => {
           </div>
         ) : (
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="hidden sm:inline-flex">
-              Sign In
-            </Button>
-            <Button className="gradient-primary text-white rounded-full hover:shadow-glow transition-smooth">
-              Get Started
-            </Button>
+            <Link to="/auth">
+              <Button variant="ghost" className="hidden sm:inline-flex">
+                Sign In
+              </Button>
+            </Link>
+            <Link to="/auth">
+              <Button className="gradient-primary text-white rounded-full hover:shadow-glow transition-smooth">
+                Get Started
+              </Button>
+            </Link>
           </div>
         )}
       </div>

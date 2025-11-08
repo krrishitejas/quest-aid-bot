@@ -6,6 +6,7 @@ import { HowItWorks } from "@/components/HowItWorks";
 import { Dashboard } from "@/components/Dashboard";
 import { CTA } from "@/components/CTA";
 import { Footer } from "@/components/Footer";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   // Mock user state - toggle between landing and dashboard view

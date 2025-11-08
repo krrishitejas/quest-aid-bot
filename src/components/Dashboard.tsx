@@ -2,8 +2,10 @@ import { StatCard } from "./StatCard";
 import { PlanCard } from "./PlanCard";
 import { Button } from "@/components/ui/button";
 import { Clock, BookOpen, CheckCircle, Plus, TrendingUp } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const Dashboard = () => {
+  const navigate = useNavigate();
   // Mock data
   const stats = [
     { icon: Clock, label: "Study Hours", value: "24.5", trend: { value: "12%", positive: true } },
@@ -56,7 +58,11 @@ export const Dashboard = () => {
             <h1 className="text-4xl font-bold mb-2">Welcome back! 👋</h1>
             <p className="text-muted-foreground text-lg">Let's continue your learning journey</p>
           </div>
-          <Button size="lg" className="gradient-primary text-white rounded-full shadow-elegant hover:shadow-glow transition-smooth">
+          <Button 
+            size="lg" 
+            className="gradient-primary text-white rounded-full shadow-elegant hover:shadow-glow transition-smooth"
+            onClick={() => navigate("/create-plan")}
+          >
             <Plus className="mr-2 w-5 h-5" />
             Create New Plan
           </Button>
