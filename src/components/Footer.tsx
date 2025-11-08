@@ -1,23 +1,23 @@
 import { Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const Footer = () => {
   const links = {
     product: [
-      { label: "Features", href: "#" },
-      { label: "How It Works", href: "#" },
-      { label: "Pricing", href: "#" },
-      { label: "FAQ", href: "#" },
+      { label: "Features", href: "/#features" },
+      { label: "How It Works", href: "/#how-it-works" },
+      { label: "Pricing", href: "/pricing" },
+      { label: "Analytics", href: "/analytics" },
     ],
     company: [
-      { label: "About", href: "#" },
-      { label: "Blog", href: "#" },
-      { label: "Careers", href: "#" },
-      { label: "Contact", href: "#" },
+      { label: "About", href: "/about" },
+      { label: "Contact", href: "/contact" },
+      { label: "Achievements", href: "/achievements" },
+      { label: "Profile", href: "/profile" },
     ],
     legal: [
-      { label: "Privacy", href: "#" },
-      { label: "Terms", href: "#" },
-      { label: "Security", href: "#" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
     ],
   };
 
@@ -44,9 +44,9 @@ export const Footer = () => {
             <ul className="space-y-2">
               {links.product.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -57,9 +57,9 @@ export const Footer = () => {
             <ul className="space-y-2">
               {links.company.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -70,9 +70,9 @@ export const Footer = () => {
             <ul className="space-y-2">
               {links.legal.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

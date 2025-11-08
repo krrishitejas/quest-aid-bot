@@ -27,22 +27,30 @@ export const Header = ({ user }: HeaderProps) => {
         {user ? (
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-3">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/10">
-                <Zap className="w-4 h-4 text-accent" />
-                <span className="text-sm font-semibold">{user.xp} XP</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10">
-                <Trophy className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold">Level {user.level}</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warning/10">
-                <span className="text-lg">🔥</span>
-                <span className="text-sm font-semibold">{user.streak} day streak</span>
-              </div>
+              <Link to="/achievements">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/10 hover:bg-accent/20 transition-colors cursor-pointer">
+                  <Zap className="w-4 h-4 text-accent" />
+                  <span className="text-sm font-semibold">{user.xp} XP</span>
+                </div>
+              </Link>
+              <Link to="/achievements">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer">
+                  <Trophy className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-semibold">Level {user.level}</span>
+                </div>
+              </Link>
+              <Link to="/achievements">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warning/10 hover:bg-warning/20 transition-colors cursor-pointer">
+                  <span className="text-lg">🔥</span>
+                  <span className="text-sm font-semibold">{user.streak} day streak</span>
+                </div>
+              </Link>
             </div>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
-              {user.name[0].toUpperCase()}
-            </div>
+            <Link to="/profile">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold hover:shadow-glow transition-shadow cursor-pointer">
+                {user.name[0].toUpperCase()}
+              </div>
+            </Link>
           </div>
         ) : (
           <div className="flex items-center gap-3">
