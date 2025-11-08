@@ -142,13 +142,13 @@ export const DaySchedule = ({ planId, subject, topic }: DayScheduleProps) => {
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <Card className="p-6">
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xl font-bold">7-Day Study Schedule</h3>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
+    <Card className="p-8 gradient-card">
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+          <h3 className="text-2xl font-bold">7-Day Study Schedule</h3>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge className="flex items-center gap-1.5 px-3 py-1.5 bg-secondary/10 text-secondary border-secondary/20">
+              <Calendar className="w-3.5 h-3.5" />
               {completedDays}/{schedule.length} Days
             </Badge>
             {!remindersEnabled && (
@@ -156,21 +156,21 @@ export const DaySchedule = ({ planId, subject, topic }: DayScheduleProps) => {
                 variant="outline"
                 size="sm"
                 onClick={enableReminders}
-                className="flex items-center gap-1"
+                className="flex items-center gap-1.5 hover-lift"
               >
-                <Bell className="w-3 h-3" />
+                <Bell className="w-3.5 h-3.5" />
                 Enable Reminders
               </Button>
             )}
           </div>
         </div>
-        <Progress value={progressPercentage} className="mb-2" />
+        <Progress value={progressPercentage} className="mb-3 h-3" />
         <p className="text-sm text-muted-foreground">
-          {progressPercentage.toFixed(0)}% Complete
+          {progressPercentage.toFixed(0)}% Complete - Keep up the great work!
         </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {schedule.map((task, index) => {
           const isToday = task.date === today;
           const isPast = task.date < today;
@@ -179,35 +179,43 @@ export const DaySchedule = ({ planId, subject, topic }: DayScheduleProps) => {
           return (
             <Card
               key={task.day}
-              className={`p-4 ${
-                isToday ? 'border-primary border-2' : ''
-              } ${task.completed ? 'bg-success/5' : ''} ${
+              className={`p-6 transition-smooth hover-lift ${
+                isToday ? 'border-primary border-2 shadow-glow bg-primary/5' : ''
+              } ${task.completed ? 'bg-success/5 border-success/20' : ''} ${
                 task.locked ? 'opacity-60' : ''
               }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant={isToday ? "default" : "outline"}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge 
+                      variant={isToday ? "default" : "outline"}
+                      className={isToday ? "bg-primary shadow-card" : ""}
+                    >
                       Day {task.day}
                     </Badge>
                     {isToday && (
-                      <Badge className="bg-primary/10 text-primary">Today</Badge>
+                      <Badge className="bg-accent/10 text-accent border-accent/20 animate-pulse">
+                        Today
+                      </Badge>
                     )}
                     {task.completed && (
-                      <CheckCircle className="w-4 h-4 text-success" />
+                      <CheckCircle className="w-5 h-5 text-success" />
                     )}
                     {task.locked && (
-                      <Lock className="w-4 h-4 text-muted-foreground" />
+                      <Lock className="w-5 h-5 text-muted-foreground" />
                     )}
                   </div>
-                  <h4 className="font-semibold mb-1">{task.title}</h4>
+                  <h4 className="font-semibold text-lg mb-2">{task.title}</h4>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="w-4 h-4" />
                       {task.duration} min
                     </span>
-                    <span>{new Date(task.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4" />
+                      {new Date(task.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
                   </div>
                 </div>
                 <Button
@@ -215,7 +223,7 @@ export const DaySchedule = ({ planId, subject, topic }: DayScheduleProps) => {
                   size="sm"
                   onClick={() => handleStartDay(index)}
                   disabled={task.completed || task.locked || isFuture || isPast}
-                  className={isToday ? "gradient-primary" : ""}
+                  className={isToday ? "gradient-primary shadow-glow" : ""}
                 >
                   {task.completed ? "Completed" : task.locked ? "Locked" : isFuture ? "Not Yet" : isPast ? "Missed" : "Start"}
                 </Button>
